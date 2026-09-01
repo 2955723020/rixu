@@ -54,6 +54,63 @@ npm run test:e2e
 
 专注历史独立保存在浏览器 `localStorage` 的 `rixu-focus:v1` 中，任务数据仍使用 `rixu:v1`。左侧“专注统计”按当前用户时区展示今日、本周、最近七天、主题分布和最近记录。专注结束只保存投入时长，不会自动完成、恢复或修改关联任务；删除任务也不会删除已有专注历史。
 
+## 使用 Docker Compose 部署
+
+这种方式会自动安装前端依赖、构建生产版本并使用 Nginx 提供页面。服务器只需要安装 Docker Engine 和 Docker Compose，不需要另外安装 Node.js 或 Nginx。
+
+### 1. 检查 Docker
+
+```bash
+docker --version
+docker compose version
+```
+
+两条命令都显示版本号后，进入项目根目录，也就是包含 `compose.yaml` 的目录。
+
+### 2. 构建并启动
+
+```bash
+docker compose up -d --build --wait
+docker compose ps
+```
+
+`--build` 会根据当前源码重新构建镜像，`-d` 让容器在后台运行，`--wait` 会等待健康检查完成。`docker compose ps` 中的 `web` 服务显示 `healthy` 即表示启动成功。
+
+本机访问：`http://127.0.0.1:8080`
+
+其他设备访问：`http://服务器IP:8080`
+
+如果其他设备无法访问，需要在服务器防火墙或云厂商安全组中放行入站 TCP 端口 `8080`。例如使用 UFW 的服务器可以执行 `sudo ufw allow 8080/tcp`；使用云服务器时还需要在云控制台的安全组中添加对应规则。
+
+### 3. 查看状态和日志
+
+```bash
+docker compose ps
+docker compose logs -f web
+```
+
+查看日志时按 `Ctrl+C` 只会退出日志查看，不会停止容器。如果启动失败，先执行 `docker compose ps` 查看状态，再执行 `docker compose logs web` 查看完整错误。
+
+### 4. 源码更新后重新部署
+
+```bash
+docker compose up -d --build --wait
+```
+
+Compose 会重新构建镜像并替换旧容器。任务和专注记录保存在访问者浏览器的 `localStorage` 中，不在容器内，所以正常重建或删除容器不会清除当前浏览器的数据。不过，不同浏览器、设备、主机名、协议或端口使用不同的浏览器存储，彼此不会自动同步。
+
+### 5. 停止服务
+
+```bash
+docker compose down
+```
+
+该命令会停止并删除服务容器及 Compose 网络。之后可再次运行 `docker compose up -d --build --wait` 启动。
+
+### 6. Docker 权限问题
+
+如果命令显示 `permission denied while trying to connect to the docker API at unix:///var/run/docker.sock`，表示当前账号可以运行 Docker 客户端，但没有访问 Docker 服务的权限。不要通过 `chmod 666 /var/run/docker.sock` 放开系统权限。可以联系服务器管理员配置 Docker 用户组，或在明确了解服务器权限风险后按照当前 Linux 发行版的 Docker 安装文档处理；Docker 用户组通常具有接近系统管理员的权限。
+
 ## 3. 领域库五分钟快速开始
 
 本项目使用原生 ES Modules。自己编写调用脚本时，请使用 `.js`/`.mjs` 文件，或通过 `node --input-type=module` 执行标准输入中的示例。

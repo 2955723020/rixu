@@ -1,0 +1,17 @@
+.git/
+.agents/
+.codex/
+.superpowers/
+.teamos/
+node_modules/
+web/node_modules/
+dist/
+web/dist/
+coverage/
+test-results/
+web/test-results/
+playwright-report/
+web/playwright-report/
+*.log
+.env
+.env.*

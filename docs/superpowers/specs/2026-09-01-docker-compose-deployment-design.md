@@ -10,7 +10,7 @@ This first deployment targets one server without a domain name or HTTPS.
 
 The application will use a multi-stage container build:
 
-1. A Node.js 20 Alpine build stage installs the locked dependencies from `web/package-lock.json` and runs the existing Vite production build.
+1. A Node.js 22 Alpine build stage installs the locked dependencies from `web/package-lock.json`, copies the root domain modules imported by the Web application, and runs the existing Vite production build.
 2. An Nginx Alpine runtime stage receives only the generated `web/dist` files and the project Nginx configuration.
 3. Docker Compose builds the image, maps host port `8080` to container port `80`, restarts the service after failures or server reboots, and reports its health.
 
@@ -70,5 +70,4 @@ Implementation verification will include:
 4. Request `http://127.0.0.1:8080/` and confirm that the generated page is served.
 5. Request an application-style path to confirm SPA fallback.
 6. Request a missing asset path to confirm it returns 404.
-7. Stop the verification deployment cleanly.
-
+7. Keep the verified deployment running so it is immediately available to the operator.
