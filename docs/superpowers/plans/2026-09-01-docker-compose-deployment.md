@@ -330,7 +330,7 @@ docker compose ps
 
 Expected: no whitespace errors; Git lists only the intended deployment plan/configuration/documentation changes; Compose reports the `web` service healthy on port 8080.
 
-- [ ] **Step 6: Create the deployment commit after user approval**
+- [x] **Step 6: Create the deployment commit after user approval**
 
 Run only when the user explicitly asks to commit:
 
