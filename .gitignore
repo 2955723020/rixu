@@ -30,8 +30,8 @@ pnpm-debug.log*
 Thumbs.db
 
 # Local tool and agent state
+.worktrees/
 .agents/
 .codex/
 .superpowers/
 .teamos/
-
