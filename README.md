@@ -4,10 +4,43 @@
 
 > 当前仓库包含 **Node.js 领域逻辑库**与可直接启动的 React Web 前端。前端数据保存在浏览器 `localStorage`；项目仍没有 HTTP API 和数据库驱动，通知与云同步需要使用方接入平台适配器。
 
-## 1. 环境要求
+## 1. Windows 傻瓜式启动（推荐）
 
-- Node.js 20 或更高版本
-- npm
+项目根目录已经提供 `启动.bat`。项目放在普通 Windows 文件夹，或者放在 `\\wsl.localhost\\Ubuntu\\...` 这样的 WSL 文件夹中，都可以使用同一个启动文件。
+
+### 第一次使用
+
+1. 在 Windows 文件资源管理器地址栏中粘贴项目地址，例如 `\\wsl.localhost\\Ubuntu\\home\\qh\\project\\c2`，按回车。
+2. 找到并双击 `启动.bat`。
+3. 第一次启动会检查 Node.js，并自动安装或更新 `web/` 依赖，可能需要几分钟。看到 Windows 权限提示时请选择允许。
+4. 浏览器会自动打开 `http://localhost:5173/`，页面出现后即可使用。
+
+项目需要 Node.js `20.19+` 或 `22.12+`，不支持 Node.js 21。普通 Windows 路径缺少 Node.js 时，启动器会尝试通过 `winget` 安装 LTS 版本；WSL 路径会使用 Ubuntu 内已经安装的 Node.js。如果 WSL 中没有合适版本，请先在 Ubuntu 终端安装 Node.js 22 LTS；使用 nvm 的用户可以运行：
+
+```bash
+nvm install 22
+nvm alias default 22
+```
+
+安装后关闭黑色启动窗口，再次双击 `启动.bat`。
+
+### 以后每天使用
+
+每次只需要双击 `启动.bat`。黑色窗口必须保持打开；它就是本地服务。浏览器没有自动打开时，手动访问 `http://localhost:5173/`。
+
+使用结束时回到黑色窗口，按 `Ctrl+C` 停止服务，然后关闭窗口。不要直接删除 `web/node_modules`，启动器会在依赖变化时自动更新。
+
+任务、清单、筛选条件、主题、专注记录和用户时区保存在当前浏览器的 `localStorage` 中，不会上传到服务器。请固定使用同一个浏览器和 `http://localhost:5173/`；更换浏览器、主机名或端口后会看到另一份独立数据。
+
+### 常见问题
+
+- **提示端口 5173 被占用**：先关闭另一个项目的启动窗口；也可以在项目目录打开终端，运行 `启动.bat -Port 5174`。注意，换端口后浏览器会使用一份新的本地数据。
+- **首次安装失败**：检查网络或代理，关闭窗口后重新双击，启动器会继续安装。
+- **提示 WSL 中的 Node.js 版本不支持**：在 Ubuntu 终端运行 `node -v`，安装 Node.js 22 LTS 后重试。
+- **页面打不开但窗口没有报错**：手动访问 `http://localhost:5173/`；仍打不开时按 `Ctrl+C` 停止，再重新双击。
+- **只想检查环境**：在项目目录打开终端，运行 `启动.bat -Check`，检查完成后不会启动网页服务。
+
+## 2. 命令行启动（Linux、macOS 或开发者）
 
 根目录领域库没有第三方运行依赖，可直接运行测试：
 
@@ -15,9 +48,7 @@
 npm test
 ```
 
-Web 前端依赖 React、Vite、Zustand 和 Tailwind CSS，首次运行需要安装 `web/` 子项目依赖。
-
-## 2. 启动日序
+Web 前端依赖 React、Vite、Zustand 和 Tailwind CSS，首次运行需要安装 `web/` 子项目依赖：
 
 ```bash
 cd web
@@ -25,7 +56,20 @@ npm install
 npm run dev
 ```
 
-打开终端输出的本地地址，即可开始使用。任务、清单、筛选条件、主题和用户时区保存在当前浏览器的 `localStorage` 中，不会上传到服务器。
+打开终端输出的本地地址即可开始使用。
+
+生产构建与自动化验证：
+
+```bash
+npm test
+npm --prefix web test
+npm --prefix web run build
+npm --prefix web run test:e2e
+```
+
+升级自旧版 TeamOS 前端时，日序会自动把 `teamos:v1` 中的浏览器数据迁移到 `rixu:v1`，已有任务不会因改名丢失。
+
+## 3. 日序功能简介
 
 常用操作：
 
@@ -36,16 +80,6 @@ npm run dev
 - 在日历中切换月/周视图，选择日期后可直接创建当天任务。
 - 在左侧底部覆盖用户时区；今天、逾期、日历和统计会使用该时区计算。
 
-生产构建与自动化验证：
-
-```bash
-npm test
-npm run build
-npm run test:e2e
-```
-
-升级自旧版 TeamOS 前端时，日序会自动把 `teamos:v1` 中的浏览器数据迁移到 `rixu:v1`，已有任务不会因改名丢失。
-
 ### 专注模式
 
 可以从顶部计时器按钮开始临时主题专注，从任一任务行的播放按钮开始关联任务专注，也可以在左侧“专注统计”页面开始。开始前可选择番茄钟或自由计时：番茄钟按设置时长倒计时，自由计时从零正向计时。
@@ -54,7 +88,7 @@ npm run test:e2e
 
 专注历史独立保存在浏览器 `localStorage` 的 `rixu-focus:v1` 中，任务数据仍使用 `rixu:v1`。左侧“专注统计”按当前用户时区展示今日、本周、最近七天、主题分布和最近记录。专注结束只保存投入时长，不会自动完成、恢复或修改关联任务；删除任务也不会删除已有专注历史。
 
-## 使用 Docker Compose 部署
+## 4. 使用 Docker Compose 部署服务器版本
 
 这种方式会自动安装前端依赖、构建生产版本并使用 Nginx 提供页面。服务器只需要安装 Docker Engine 和 Docker Compose，不需要另外安装 Node.js 或 Nginx。
 
@@ -111,7 +145,7 @@ docker compose down
 
 如果命令显示 `permission denied while trying to connect to the docker API at unix:///var/run/docker.sock`，表示当前账号可以运行 Docker 客户端，但没有访问 Docker 服务的权限。不要通过 `chmod 666 /var/run/docker.sock` 放开系统权限。可以联系服务器管理员配置 Docker 用户组，或在明确了解服务器权限风险后按照当前 Linux 发行版的 Docker 安装文档处理；Docker 用户组通常具有接近系统管理员的权限。
 
-## 3. 领域库五分钟快速开始
+## 5. 领域库五分钟快速开始
 
 本项目使用原生 ES Modules。自己编写调用脚本时，请使用 `.js`/`.mjs` 文件，或通过 `node --input-type=module` 执行标准输入中的示例。
 
@@ -164,7 +198,7 @@ JS
 
 `startAt` 和 `endAt` 输入为用户时区中的本地时间，保存后转换为可比较的 UTC ISO 时间。
 
-## 4. 统一返回值与错误处理
+## 6. 统一返回值与错误处理
 
 会执行校验或持久化的 API 通常返回以下两种结构之一：
 
@@ -189,7 +223,7 @@ JS
 
 调用方应先判断 `ok`，再读取 `task`、`list` 或 `errors`。校验失败不会写入部分数据，`errors[].action` 给出了建议的修正动作。
 
-## 5. 任务生命周期
+## 7. 任务生命周期
 
 ### 创建任务
 
@@ -245,7 +279,7 @@ repository.delete(taskId, { confirmed: true });
 
 重复调用 `complete`、`uncomplete` 或已确认的 `delete` 是幂等的。完成任务时会记录 `completedAt`，恢复未完成时会将其清空。
 
-## 6. 中文自然语言日期
+## 8. 中文自然语言日期
 
 ```js
 import { parseChineseDate } from './src/domain/date-parser.js';
@@ -275,7 +309,7 @@ console.log(draft);
 
 当前解析器只覆盖“明天”和“下午 N 点/分”这一组受控表达，例如 `明天下午3点`、`明天下午3点30分`。它尚不是通用中文自然语言解析器；其他表达应提供日期/时间选择器作为回退，不能把失败结果直接保存。
 
-## 7. 重复任务规则
+## 9. 重复任务规则
 
 `calculateNextOccurrence` 计算下一期日期，同时返回规范化后的重复规则：
 
@@ -316,7 +350,7 @@ calculateNextOccurrence({
 
 注意：当前 `TaskRepository.complete()` 只完成当前任务，不会自动创建下一期实例。上层应用需要在完成成功后调用 `calculateNextOccurrence()`，再通过仓库创建新任务。
 
-## 8. 今日、未来、逾期、已完成和日历视图
+## 10. 今日、未来、逾期、已完成和日历视图
 
 查询函数接收任务数组，不会修改原数据：
 
@@ -350,7 +384,7 @@ const dateCell = selectCalendarDate(allTasks, '2026-09-01');
 
 `getTasksForView` 支持 `today`、`future`、`overdue` 和 `completed`。日历视图由 `buildCalendarIndex`/`selectCalendarDate` 单独提供。
 
-## 9. 清单、标签、优先级和子任务
+## 11. 清单、标签、优先级和子任务
 
 ### 清单
 
@@ -408,7 +442,7 @@ repository.complete(parent.task.id); // 此时可以完成
 
 仓库会拒绝不存在的父任务、自引用和循环父子关系。
 
-## 10. 到期提醒
+## 12. 到期提醒
 
 提醒服务只负责规则和状态，不直接调用操作系统通知。使用时需要提供：
 
@@ -453,7 +487,7 @@ reminders.handleTaskCompleted(reminderTaskId);
 
 有 `endAt` 的任务以结束时刻提醒；无具体时间的任务默认在截止日当地 09:00 提醒。权限拒绝或调度器失败时，服务返回可重试的 `pending` 状态。完成任务后，上层应用应调用 `handleTaskCompleted` 取消已有提醒。
 
-## 11. 完成统计
+## 13. 完成统计
 
 ```js
 import {
@@ -479,7 +513,7 @@ const heatmap = buildCompletionHeatmap(instances, {
 
 完成率的分母排除 `cancelled` 实例。热力图按 `completedAt` 在指定时区中的本地日期聚合；重复任务应将每个实际生成的任务实例分别传入。
 
-## 12. 本地优先与云同步
+## 14. 本地优先与云同步
 
 本地优先流程由以下组件组成：
 
@@ -540,7 +574,7 @@ console.log(queue.diagnostics());
 - 同一实体的冲突按 `updatedAt`、`deviceId` 和稳定次级键确定性解决。
 - `SyncQueue` 和仓库当前使用内存存储；应用重启后的持久化需要宿主应用自行实现。
 
-## 13. 项目结构
+## 15. 项目结构
 
 ```text
 src/
@@ -556,7 +590,7 @@ web/            React Web 前端、前端测试与浏览器测试
 
 需要理解某个 API 的完整边界时，优先阅读同名测试。例如任务仓库对应 `tests/storage/task-repository.test.js`，同步协调器对应 `tests/sync/sync-coordinator.test.js`。
 
-## 14. 当前实现边界
+## 16. 当前实现边界
 
 - 已提供响应式 Web UI；目前没有原生移动端应用、CLI 或 HTTP API。
 - 仓库和同步队列默认只保存在内存中，进程退出后数据不会保留。
